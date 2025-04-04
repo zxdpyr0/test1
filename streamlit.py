@@ -1,7 +1,6 @@
 import streamlit as st
 from datetime import datetime
 import json
-import webbrowser
 
 st.set_page_config(page_title="AWR URL Opener", layout="centered")
 
@@ -12,8 +11,8 @@ with st.form("url_form"):
     keyword_id = st.text_input("Keyword ID")
     search_engine_id = st.text_input("Search Engine ID")
     date_value = st.date_input("Date").strftime("%Y-%m-%d")
-    
-    submitted = st.form_submit_button("Open URL")
+
+    submitted = st.form_submit_button("Open URLs")
 
     if submitted:
         now = datetime.now()
@@ -28,11 +27,9 @@ with st.form("url_form"):
         }
         date_range_str = json.dumps(date_range)
 
-        # First URL (optional keyword page, not needed to open separately in Streamlit)
+        # URLs to open
         keywords_url = f"https://app.advancedwebranking.com/ranking/keywords?project_id={project_id}"
-
-        # Main SERP screenshot URL
-        final_url = (
+        serp_url = (
             f"https://app.advancedwebranking.com/ranking/html?"
             f"projectId={project_id}&"
             f"keyword={keyword_id}&"
@@ -42,8 +39,20 @@ with st.form("url_form"):
             f"serpFeatureAchieved=1"
         )
 
-        st.success("URL generated! Click below to open:")
-        st.markdown(f"[Open SERP Screenshot]({final_url})", unsafe_allow_html=True)
+        # JavaScript to auto-open both URLs in new tabs
+        js = f"""
+        <script>
+        window.open("{keywords_url}", "_blank");
+        setTimeout(function() {{
+            window.open("{serp_url}", "_blank");
+        }}, 1500);
+        </script>
+        """
+        st.components.v1.html(js)
+
+        st.success("Links generated and opened in new tabs (if not blocked by browser).")
+        st.markdown(f"[🔗 Keywords Page]({keywords_url})", unsafe_allow_html=True)
+        st.markdown(f"[📷 SERP Screenshot]({serp_url})", unsafe_allow_html=True)
 
 st.markdown("---")
 st.markdown(
